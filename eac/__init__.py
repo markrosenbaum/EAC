@@ -304,8 +304,12 @@ def _link_github(github_username: str, github_id: str, member: Any,
     try:
         resp.raise_for_status()
     except HTTPError as e:
-        print('response:', resp.json())
-        raise e
+        resp_json = resp.json()
+        print('response:', resp_json)
+        if not (resp.status_code == 422 and any(
+                err.get('message') == 'Invitee is already a part of this organization'
+                for err in resp_json.get('errors', []))):
+            raise e
 
     github_user_headers = {
         'Accept': 'application/vnd.github.v3+json',
